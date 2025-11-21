@@ -13,7 +13,9 @@
   --color-secondary: #03373D;
 }
 
-
+ul li a.active{
+  @apply bg-primary rounded-2xl
+}
 
 body{
   font-family: "Urbanist", sans-serif;
