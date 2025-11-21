@@ -1,92 +1,40 @@
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
+import { useLoaderData } from "react-router";
 
 const SendParcel = () => {
-  const district = (
-    <>
-      <option>Dhaka</option>
-      <option>Faridpur</option>
-      <option>Gazipur</option>
-      <option>Gopalganj</option>
-      <option>Kishoreganj</option>
-      <option>Madaripur</option>
-      <option>Manikganj</option>
-      <option>Munshiganj</option>
-      <option>Narayanganj</option>
-      <option>Narsingdi</option>
-      <option>Rajbari</option>
-      <option>Shariatpur</option>
-      <option>Tangail</option>
-
-      <option>Brahmanbaria</option>
-      <option>Chandpur</option>
-      <option>Chattogram</option>
-      <option>Cumilla</option>
-      <option>Cox's Bazar</option>
-      <option>Feni</option>
-      <option>Khagrachari</option>
-      <option>Lakshmipur</option>
-      <option>Noakhali</option>
-      <option>Rangamati</option>
-
-      <option>Bagerhat</option>
-      <option>Chuadanga</option>
-      <option>Jashore</option>
-      <option>Jhenaidah</option>
-      <option>Khulna</option>
-      <option>Kushtia</option>
-      <option>Magura</option>
-      <option>Meherpur</option>
-      <option>Narail</option>
-      <option>Satkhira</option>
-
-      <option>Bogura</option>
-      <option>Joypurhat</option>
-      <option>Naogaon</option>
-      <option>Natore</option>
-      <option>Chapai Nawabganj</option>
-      <option>Pabna</option>
-      <option>Rajshahi</option>
-      <option>Sirajganj</option>
-
-      <option>Dinajpur</option>
-      <option>Gaibandha</option>
-      <option>Kurigram</option>
-      <option>Lalmonirhat</option>
-      <option>Nilphamari</option>
-      <option>Panchagarh</option>
-      <option>Rangpur</option>
-      <option>Thakurgaon</option>
-
-      <option>Habiganj</option>
-      <option>Moulvibazar</option>
-      <option>Sunamganj</option>
-      <option>Sylhet</option>
-
-      <option>Barguna</option>
-      <option>Barishal</option>
-      <option>Bhola</option>
-      <option>Jhalokathi</option>
-      <option>Patuakhali</option>
-      <option>Pirojpur</option>
-    </>
-  );
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm()
 
+    const serviceCenters = useLoaderData();
+    const regionsDuplicate = serviceCenters.map(r=>r.region);
+    const regions = [...new Set(regionsDuplicate)];
+    // console.log(regions);
+    const senderRegion = useWatch({control, name:'senderRegions'})
+    const receiverRegion = useWatch({control, name:'receiverRegion'})
+
+    const districtsByRegion = (region)=>{
+        const regionDistricts = serviceCenters.filter(c=>c.region === region);
+        const districts = regionDistricts.map(d=> d.district);
+        return districts;
+    }
+
+
   const haldleSendParcel = (data)=>{
-    console.log("Submited");
+    console.log(data);
+    const sameDistict = data.senderDistrict === data.receiverDistrict;
+    console.log(sameDistict);
   }
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex justify-center p-6">
       <div className="bg-white w-full max-w-6xl p-10 rounded-2xl shadow">
         
-        {/* FORM START */}
         <form onSubmit={handleSubmit(haldleSendParcel)}>
 
           <h1 className="text-3xl font-bold text-[#003C3C]">Send A Parcel</h1>
@@ -97,7 +45,8 @@ const SendParcel = () => {
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
-                name="type"
+                {...register('parcelType')}
+                value="document"
                 defaultChecked
                 className="accent-[#4CC45C]"
               />
@@ -105,7 +54,10 @@ const SendParcel = () => {
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="type" className="accent-[#4CC45C]" />
+              <input type="radio" 
+              {...register('parcelType')}
+              value="non-document" 
+              className="accent-[#4CC45C]" />
               <span>Non-Document</span>
             </label>
           </div>
@@ -118,6 +70,7 @@ const SendParcel = () => {
               <label className="text-sm font-medium">Parcel Name</label>
               <input
                 name="parcelName"
+                {...register('parcelName')}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                 placeholder="Parcel Name"
                 required
@@ -127,7 +80,9 @@ const SendParcel = () => {
             <div>
               <label className="text-sm font-medium">Parcel Weight (KG)</label>
               <input
+              type="number"
                 name="parcelWeight"
+                {...register('parcelWeight')}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                 placeholder="Parcel Weight (KG)"
                 required
@@ -148,15 +103,28 @@ const SendParcel = () => {
                   <label className="text-sm font-medium">Sender Name</label>
                   <input
                     name="senderName"
+                    {...register('senderName')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Sender Name"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium">Address</label>
+                  <label className="text-sm font-medium">Sender Email</label>
+                  <input
+                  type="email"
+                    name="senderEmail"
+                    {...register('senderEmail')}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
+                    placeholder="Sender Email"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Sender Address</label>
                   <input
                     name="senderAddress"
+                    {...register('senderAddress')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Address"
                   />
@@ -166,21 +134,41 @@ const SendParcel = () => {
                   <label className="text-sm font-medium">Sender Phone No</label>
                   <input
                     name="senderPhone"
+                    {...register('senderPhone')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Sender Phone No"
                   />
                 </div>
 
                 <div>
+                  <label className="text-sm font-medium">Regions</label>
+                  <select
+                    name="senderRegions"
+                    {...register('senderRegions')}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
+                  >
+                    <option value="">Pick a Regions</option>
+                    {
+                      regions.map((r, i)=><option key={i} value={r}>{r}</option>)
+                    }
+                  </select>
+                </div>
+
+                <div>
                   <label className="text-sm font-medium">Your District</label>
                   <select
                     name="senderDistrict"
+                    {...register('senderDistrict')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                   >
-                    <option value="">Select your District</option>
-                    {district}
+                    <option value="">Pick a District</option>
+                    {
+                      districtsByRegion(senderRegion).map((r, i)=><option key={i} value={r}>{r}</option>)
+                    }
                   </select>
                 </div>
+
+                
 
                 <div>
                   <label className="text-sm font-medium">
@@ -188,6 +176,7 @@ const SendParcel = () => {
                   </label>
                   <textarea
                     name="pickupInstruction"
+                    {...register('pickupInstruction')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm h-20 focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Pickup Instruction"
                   ></textarea>
@@ -206,8 +195,19 @@ const SendParcel = () => {
                   <label className="text-sm font-medium">Receiver Name</label>
                   <input
                     name="receiverName"
+                    {...register('receiverName')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Receiver Name"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Receiver Email</label>
+                  <input
+                  type="email"
+                    name="receiverEmail"
+                    {...register('receiverEmail')}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
+                    placeholder="Receiver Email"
                   />
                 </div>
 
@@ -215,6 +215,7 @@ const SendParcel = () => {
                   <label className="text-sm font-medium">Receiver Address</label>
                   <input
                     name="receiverAddress"
+                    {...register('receiverAddress')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Receiver Address"
                   />
@@ -226,9 +227,26 @@ const SendParcel = () => {
                   </label>
                   <input
                     name="receiverPhone"
+                    {...register('receiverPhone')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Receiver Contact No"
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">
+                    Receiver Region
+                  </label>
+                  <select
+                    name="receiverRegion"
+                    {...register('receiverRegion')}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
+                  >
+                    <option value="">Select Receiver Region</option>
+                    {
+                      regions.map((r, i)=><option key={i} value={r}>{r}</option>)
+                    }
+                  </select>
                 </div>
 
                 <div>
@@ -237,10 +255,13 @@ const SendParcel = () => {
                   </label>
                   <select
                     name="receiverDistrict"
+                    {...register('receiverDistrict')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm focus:ring-2 focus:ring-[#4CC45C] outline-none"
                   >
                     <option value="">Select Receiver District</option>
-                    {district}
+                    {
+                      districtsByRegion(receiverRegion).map((r, i)=><option key={i} value={r}>{r}</option>)
+                    }
                   </select>
                 </div>
 
@@ -250,6 +271,7 @@ const SendParcel = () => {
                   </label>
                   <textarea
                     name="deliveryInstruction"
+                    {...register('deliveryInstruction')}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 mt-1 text-sm h-20 focus:ring-2 focus:ring-[#4CC45C] outline-none"
                     placeholder="Delivery Instruction"
                   ></textarea>
